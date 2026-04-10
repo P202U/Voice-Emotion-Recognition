@@ -28,11 +28,6 @@ def get_mapped_dataframe(paths):
         "sav": os.path.join(paths["savee"], "ALL"),
     }
 
-
-def get_data(ravdess_p, crema_p, tess_p, savee_p):
-    file_path = []
-    emotion = []
-
     # 1. RAVDESS
     rav_map = {
         1: "neutral",
@@ -44,13 +39,13 @@ def get_data(ravdess_p, crema_p, tess_p, savee_p):
         7: "disgust",
         8: "surprised",
     }
-    for dir in os.listdir(ravdess_p):
+    for dir in os.listdir(real_paths["rav"]):
         if not dir.startswith("Actor"):
             continue
-        for file in os.listdir(os.path.join(ravdess_p, dir)):
+        for file in os.listdir(os.path.join(real_paths["rav"], dir)):
             part = file.split(".")[0].split("-")
             emotion.append(rav_map[int(part[2])])
-            file_path.append(os.path.join(ravdess_p, dir, file))
+            file_path.append(os.path.join(real_paths["rav"], dir, file))
 
     # 2. CREMA-D
     crema_map = {
@@ -61,20 +56,20 @@ def get_data(ravdess_p, crema_p, tess_p, savee_p):
         "HAP": "happy",
         "NEU": "neutral",
     }
-    for file in os.listdir(crema_p):
+    for file in os.listdir(real_paths["cre"]):
         if file.endswith(".wav"):
             part = file.split("_")[2]
             if part in crema_map:
                 emotion.append(crema_map[part])
-                file_path.append(os.path.join(crema_p, file))
+                file_path.append(os.path.join(real_paths["cre"], file))
 
     # 3. TESS
-    for dir in os.listdir(tess_p):
+    for dir in os.listdir(real_paths["tes"]):
         label = dir.split("_")[-1].lower()
         if label == "ps":
             label = "surprised"
 
-        target_dir = os.path.join(tess_p, dir)
+        target_dir = os.path.join(real_paths["tes"], dir)
         if os.path.isdir(target_dir):
             for file in os.listdir(target_dir):
                 if file.endswith(".wav"):
@@ -91,14 +86,13 @@ def get_data(ravdess_p, crema_p, tess_p, savee_p):
         "sa": "sad",
         "su": "surprised",
     }
-    for file in os.listdir(savee_p):
+    for file in os.listdir(real_paths["sav"]):
         if file.endswith(".wav"):
             code = "".join([c for c in file.split("_")[1] if not c.isdigit()])
             if code in savee_map:
                 emotion.append(savee_map[code])
-                file_path.append(os.path.join(savee_p, file))
+                file_path.append(os.path.join(real_paths["sav"], file))
 
-    return pd.DataFrame({"Path": file_path, "Emotion": emotion})
-
+    df = pd.DataFrame({"Path": file_path, "Emotion": emotion})
     df["Emotion"] = df["Emotion"].replace({"surprise": "surprised", "calm": "neutral"})
     return df
