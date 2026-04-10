@@ -60,3 +60,24 @@ def extract_features(data, sr):
     result = np.hstack((result, tonnetz))
 
     return result
+
+
+def get_all_features(path, sr=16000):
+    data, sampling_rate = librosa.load(path, sr=sr)
+
+    # 1. Original Data
+    res1 = extract_features(data, sampling_rate)
+    result = np.array(res1)
+
+    # 2. Add Noise
+    noise_data = add_noise(data)
+    res2 = extract_features(noise_data, sampling_rate)
+    result = np.vstack((result, res2))
+
+    # 3. Stretch and Pitch
+    str_data = stretch(data)
+    pitch_data = pitch(str_data, sampling_rate)
+    res3 = extract_features(pitch_data, sampling_rate)
+    result = np.vstack((result, res3))
+
+    return result
